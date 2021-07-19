@@ -15,8 +15,8 @@ export XDG_CACHE_HOME=$HOME/.cache
 export XDG_DATA_HOME=$HOME/.local/share
 export XDG_DATA_BIN=$HOME/.local/bin
 export PATH=$XDG_DATA_BIN:$PATH
-export PATH="/usr/local/bin:$PATH"                                                                                 
-export PATH="/usr/local/sbin:$PATH"  
+export PATH="/usr/local/bin:$PATH"
+export PATH="/usr/local/sbin:$PATH"
 
 # Editor Setup
 export MANPAGER="vim -c 'set ft=man' -"
@@ -39,8 +39,6 @@ shopt -s dirspell 2> /dev/null
 
 # Correct spelling errors in arguments supplied to cd
 shopt -s cdspell 2> /dev/null
-
-
 
 CDPATH="."
 
@@ -111,11 +109,8 @@ tags
 EOM
 }
 
-# Prompt
-# Sets up my nice shell prompt with git functionality
-# get current status of git repo
-# SRC: http://ezprompt.net/
-_parse_git_dirty() {
+# get current status of git repo | sc http://ezprompt.net/
+parse_git_dirty() {
   local status untracked ahead newfile renamed deleted bits
   status=$(git status 2>&1 | tee)
   dirty=$(echo -n "${status}" 2>/dev/null | grep "modified:" &>/dev/null; echo "$?")
@@ -126,18 +121,17 @@ _parse_git_dirty() {
   deleted=$(echo -n "${status}" 2>/dev/null | grep "deleted:" &>/dev/null; echo "$?")
   bits=''
 
-  if [ "${renamed}" == "0" ];   then bits="+-${bits}";  fi
-  if [ "${ahead}" == "0" ];     then bits="^${bits}";   fi
-  if [ "${newfile}" == "0" ];   then bits="++${bits}";  fi
-  if [ "${untracked}" == "0" ]; then bits="*${bits}";   fi
-  if [ "${deleted}" == "0" ];   then bits="-${bits}";   fi
-  if [ "${dirty}" == "0" ];     then bits="*${bits}";   fi
-  if [ ! "${bits}" == "" ];     then echo " ${bits}";
-                                          else echo ""; fi
+  if [ "${renamed}" == "0" ]; then bits="+-${bits}"; fi
+  if [ "${ahead}" == "0" ]; then bits="^${bits}"; fi
+  if [ "${newfile}" == "0" ]; then bits="++${bits}"; fi
+  if [ "${untracked}" == "0" ]; then bits="*${bits}"; fi
+  if [ "${deleted}" == "0" ]; then bits="-${bits}"; fi
+  if [ "${dirty}" == "0" ]; then bits="*${bits}"; fi
+  if [ ! "${bits}" == "" ]; then echo " ${bits}"; else echo ""; fi
 }
 
 # get current branch in git repo
-_parse_git_branch() {
+parse_git_branch() {
   branch=$(git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
   if [ -n "${branch}" ]; then
     local stat
@@ -152,4 +146,5 @@ _parse_git_branch() {
 [[ $- != *i* ]] && return
 
 # Setup promt like this: (user) :: (hostname) (PWD)$ [branch status ]
-export PS1="\[\e[1;32m\]\u\[\e[m\] :: \[\e[1;31m\]\w\[\e[m\] \[\e[1;36m\]\`_parse_git_branch\`\[\e[m\] $ "
+export PS1="\[\e[1;32m\]\u\[\e[m\] :: \[\e[1;31m\]\w\[\e[m\] \[\e[1;36m\]\`parse_git_branch\`\[\e[m\] $ "
+

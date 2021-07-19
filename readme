@@ -1,0 +1,8 @@
+minienv
+
+a minimal config
+
+to activate do
+clone to preferred location and do
+
+==> source minienv in bashrc

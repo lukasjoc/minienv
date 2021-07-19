@@ -1,0 +1,151 @@
+#!/bin/bash
+# Provokes and defines some aliases and functions
+
+# Some sane defaults
+export HISTCONTROL=ignoreboth
+HISTSIZE=500000
+HISTFILESIZE=100000
+export HISTIGNORE="&:[ ]*:exit:ls:bg:fg:history:clear"
+export CLICOLOR=1
+PROMPT_COMMAND='history -a'
+
+# XDG Setup
+export XDG_CONFIG_HOME=$HOME/.config
+export XDG_CACHE_HOME=$HOME/.cache
+export XDG_DATA_HOME=$HOME/.local/share
+export XDG_DATA_BIN=$HOME/.local/bin
+export PATH=$XDG_DATA_BIN:$PATH
+
+# Editor Setup
+export MANPAGER="vim -c 'set ft=man' -"
+export EDITOR="vim"
+
+# Append to the history file, don't overwrite it
+shopt -s histappend
+
+# Update window size after every command
+shopt -s checkwinsize
+
+# Save multi-line commands as one command
+shopt -s cmdhist
+
+# Prepend cd to directory names automatically
+shopt -s autocd 2> /dev/null
+
+# Correct spelling errors during tab-completion
+shopt -s dirspell 2> /dev/null
+
+# Correct spelling errors in arguments supplied to cd
+shopt -s cdspell 2> /dev/null
+
+CDPATH="."
+
+alias ls="ls -rthGF"
+alias watchdir="watch -d ls -al"
+alias ll="ls -la"
+alias ..="cd ../"
+alias ...="cd ../../"
+alias python="python3"
+alias pip="pip3"
+alias rm="rm -i"
+alias cp="cp -i"
+alias mv="mv -i"
+alias dc="docker-compose"
+alias neofetch="neofetch --stdout"
+
+# Check for system (MACOS specific stuff)
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  alias locate_update="sudo /usr/libexec/locate.updatedb"
+
+  # keep system up-to-date
+  runbrewstuff() {
+    brew update
+    brew upgrade --greedy
+    rm -rf "$(brew --cache)"
+    brew cleanup
+    brew doctor
+    echo "Done ;)"
+  }
+
+  # install cask with new syntax and
+  # keeping old habits bc install <something>
+  bc() { brew "$1" "$2" --cask; }
+fi
+
+# reload $SHELL with -
+ns() { exec "$SHELL" -l; }
+
+# ls all global installed npm packages
+npmls() { npm list -g --depth=0; }
+
+# list all available scripts for package.json and composer.json
+sc() {
+  [[ -f "$PWD/package.json" ]]; jq .scripts "$PWD/package.json" || ""
+  [[ -f "$PWD/composer.json" ]]; jq .scripts "$PWD/composer.json" || ""
+}
+
+# working dir shortcuts
+fun() { cd "$HOME/fun" || return; }
+builds() { cd "$HOME/builds" || return; }
+
+# remove local branches that dont have a remote equivalent anymore
+remove_merged() {
+  git fetch -p
+  for br in $(git branch -vv | grep ': gone]' | awk '{print $1}'); do
+    git br -D "$br"
+  done
+}
+
+# sane defaults for vim users on linux or mac
+ignore() {
+  cat << EOM
+*~
+[._]*.sw[a-p]
+.netrwhist
+.DS_Store
+tags
+EOM
+}
+
+# Prompt
+# Sets up my nice shell prompt with git functionality
+# get current status of git repo
+# SRC: http://ezprompt.net/
+parse_git_dirty() {
+  local status untracked ahead newfile renamed deleted bits
+  status=$(git status 2>&1 | tee)
+  dirty=$(echo -n "${status}" 2>/dev/null | grep "modified:" &>/dev/null; echo "$?")
+  untracked=$(echo -n "${status}" 2>/dev/null | grep "Untracked files" &>/dev/null; echo "$?")
+  ahead=$(echo -n "${status}" 2>/dev/null | grep "Your branch is ahead of" &>/dev/null; echo "$?")
+  newfile=$(echo -n "${status}" 2>/dev/null | grep "new file:" &>/dev/null; echo "$?")
+  renamed=$(echo -n "${status}" 2>/dev/null | grep "renamed:" &>/dev/null; echo "$?")
+  deleted=$(echo -n "${status}" 2>/dev/null | grep "deleted:" &>/dev/null; echo "$?")
+  bits=''
+
+  if [ "${renamed}" == "0" ];   then bits="+-${bits}";  fi
+  if [ "${ahead}" == "0" ];     then bits="^${bits}";   fi
+  if [ "${newfile}" == "0" ];   then bits="++${bits}";  fi
+  if [ "${untracked}" == "0" ]; then bits="*${bits}";   fi
+  if [ "${deleted}" == "0" ];   then bits="-${bits}";   fi
+  if [ "${dirty}" == "0" ];     then bits="*${bits}";   fi
+  if [ ! "${bits}" == "" ];     then echo " ${bits}";
+                                          else echo ""; fi
+}
+
+# get current branch in git repo
+parse_git_branch() {
+  branch=$(git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+  if [ -n "${branch}" ]; then
+    local stat
+    stat=$(parse_git_dirty)
+    echo "[${branch}${stat}]"
+  else
+    echo ""
+  fi
+}
+
+# If not running interactively, don't do anything
+[[ $- != *i* ]] && return
+
+# Setup promt like this: (user) :: (hostname) (PWD)$ [branch status ]
+export PS1="\[\e[1;32m\]\u\[\e[m\] :: \[\e[1;31m\]\w\[\e[m\] \[\e[1;36m\]\`parse_git_branch\`\[\e[m\] $ "

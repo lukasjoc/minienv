@@ -1,0 +1,14 @@
+#!/bin/bash
+set -eu
+
+# build/expose script
+
+LOCAL_BIN="$HOME/.local/bin/"
+
+# copy it over to local bins
+mkdir "$LOCAL_BIN/minienv"
+cp -a minienv "$LOCAL_BIN/minienv/minienv"
+
+# make it executable
+chmod u+x "$LOCAL_BIN/minienv/minienv"
+

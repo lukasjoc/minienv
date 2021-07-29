@@ -3,10 +3,10 @@ set -eu
 
 # build/expose script
 
-LOCAL_BIN="$HOME/.local/bin/"
+LOCAL_BIN="$HOME/.local/bin"
 
 # copy it over to local bins
-mkdir "$LOCAL_BIN/minienv"
+[[ ! -d "$LOCAL_BIN/minienv" ]] && mkdir "$LOCAL_BIN/minienv"
 cp -a minienv "$LOCAL_BIN/minienv/minienv"
 
 # make it executable

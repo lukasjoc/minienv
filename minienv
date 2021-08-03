@@ -59,6 +59,8 @@ alias cp="cp -i"
 alias mv="mv -i"
 alias dc="docker-compose"
 alias neofetch="neofetch --stdout"
+alias vim="nvim"
+alias vi="vim"
 
 # Check for system (MACOS specific stuff)
 if [[ "$(uname -s)" == "Darwin" ]]; then

@@ -105,6 +105,31 @@ remove_merged() {
 	done
 }
 
+# push a local branch to the registry
+push_local() {
+	# check if the the function received a branch name
+	if [[ -z "$1"  ]]; then
+		echo "Need branch to push or '.' for the current as a shortcut";
+		return 1;
+	fi
+
+	# assign the given branch name to a variable
+	# if the input was a dot '.' then get the current
+	# checked out branch as the local_branch
+	local local_branch
+	local_branch="$1";
+	if [[ "$1" == "." ]]; then
+		local_branch="$(git branch --show-current)";
+		echo "Using: $local_branch as the branch name";
+	fi
+
+	# check if the branch_name exists locally as a branch object
+	if git show-ref --quiet "refs/heads/$local_branch"; then
+		git push --set-upstream origin "$local_branch";
+		echo "INFO: Branch $local_branch now available remotely"
+	fi
+}
+
 # sane defaults for vim users on linux or mac
 ignore() {
 	cat << EOM

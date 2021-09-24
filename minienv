@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# I have written a zettel about why its betters to have a more `minimal` setup
+# just read that if youra curious...
+
 # Some sane defaults
 bind -x '"\C-l": clear'
 export HISTCONTROL=ignoreboth
@@ -19,8 +22,8 @@ export PATH="/usr/local/bin:$PATH"
 export PATH="/usr/local/sbin:$PATH"
 
 # Editor Setup
-export MANPAGER="nvim -c 'set ft=man' -"
-export EDITOR="nvim"
+export MANPAGER="more"
+export EDITOR="vim"
 
 # Append to the history file, don't overwrite it
 shopt -s histappend
@@ -31,25 +34,17 @@ shopt -s checkwinsize
 # Save multi-line commands as one command
 shopt -s cmdhist
 
-# Prepend cd to directory names automatically
-shopt -s autocd 2> /dev/null
-
-# Correct spelling errors during tab-completion
-shopt -s dirspell 2> /dev/null
-
-# Correct spelling errors in arguments supplied to cd
-shopt -s cdspell 2> /dev/null
-
 CDPATH="."
 
-alias basels="ls -rthF"
+alias ls="ls -rthF"
 if [[ "$(uname -s)" == "Darwin" ]]; then
-	alias ls="basels -G"
+	alias ls="ls -FahrthG"
 else
-	alias ls="basels --color=auto"
+	alias ls="ls -FarthG --color=auto"
 fi
-alias watchdir="watch -d ls -al"
-alias ll="ls -al"
+
+alias watchdir="watch -d ls -la"
+alias ll="ls -la"
 alias ..="cd ../"
 alias ...="cd ../../"
 alias python="python3"
@@ -58,9 +53,10 @@ alias rm="rm -i"
 alias cp="cp -i"
 alias mv="mv -i"
 alias dc="docker-compose"
+alias mk="minikube"
 alias neofetch="neofetch --stdout"
-alias vim="nvim"
-alias vi="vim"
+alias vim="vim"
+alias vi="vi"
 
 # Check for system (MACOS specific stuff)
 if [[ "$(uname -s)" == "Darwin" ]]; then
@@ -90,7 +86,7 @@ npmls() { npm list -g --depth=0; }
 # list all available scripts for package.json and composer.json
 sc() {
 	[[ -f "$PWD/package.json" ]]; jq .scripts "$PWD/package.json" || ""
-	[[ -f "$PWD/composer.json" ]]; jq .scripts "$PWD/composer.json" || ""
+	# [[ -f "$PWD/composer.json" ]]; jq .scripts "$PWD/composer.json" || ""
 }
 
 # working dir shortcuts

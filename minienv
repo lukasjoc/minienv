@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# I have written a zettel about why its betters to have a more `minimal` setup
-# just read that if youra curious...
-
 # Some sane defaults
 bind -x '"\C-l": clear'
 export HISTCONTROL=ignoreboth
@@ -36,7 +33,6 @@ shopt -s cmdhist
 
 CDPATH="."
 
-alias ls="ls -rthF"
 if [[ "$(uname -s)" == "Darwin" ]]; then
 	alias ls="ls -FahrthG"
 else
@@ -55,27 +51,8 @@ alias mv="mv -i"
 alias dc="docker-compose"
 alias mk="minikube"
 alias neofetch="neofetch --stdout"
-alias vim="vim"
-alias vi="vi"
-
-# Check for system (MACOS specific stuff)
-if [[ "$(uname -s)" == "Darwin" ]]; then
-	alias locate_update="sudo /usr/libexec/locate.updatedb"
-
-	# keep system up-to-date
-	runbrewstuff() {
-		brew update
-		brew upgrade --greedy
-		rm -rf "$(brew --cache)"
-		brew cleanup
-		brew doctor
-		echo "Done ;)"
-	}
-
-	# install cask with new syntax and
-	# keeping old habits bc install <something>
-	bc() { brew "$1" "$2" --cask; }
-fi
+alias vim="\$HOME/.nix-profile/bin/vim"
+alias vi="\$HOME/.nix-profile/bin/vim"
 
 # reload $SHELL with -
 ns() { exec "$SHELL" -l; }
@@ -168,6 +145,11 @@ parse_git_branch() {
 	else
 		echo ""
 	fi
+}
+
+pwdc() {
+	echo "$PWD" | pbcopy
+	echo "Copied Pwd to PasteBoard"
 }
 
 # If not running interactively, don't do anything

@@ -2,25 +2,25 @@
 
 # Some sane defaults
 bind -x '"\C-l": clear'
-export HISTCONTROL=ignoreboth
+HISTCONTROL=ignoreboth
 HISTSIZE=500000
 HISTFILESIZE=100000
-export HISTIGNORE="&:[ ]*:exit:ls:bg:fg:history:clear"
-export CLICOLOR=1
+HISTIGNORE="&:[ ]*:exit:ls:bg:fg:history:clear"
+CLICOLOR=1
 PROMPT_COMMAND='history -a'
 
-# XDG Setup
-export XDG_CONFIG_HOME=$HOME/.config
-export XDG_CACHE_HOME=$HOME/.cache
-export XDG_DATA_HOME=$HOME/.local/share
-export XDG_DATA_BIN=$HOME/.local/bin
-export PATH=$XDG_DATA_BIN:$PATH
-export PATH="/usr/local/bin:$PATH"
-export PATH="/usr/local/sbin:$PATH"
+# XDG, PATH Setup
+XDG_CONFIG_HOME=$HOME/.config
+XDG_CACHE_HOME=$HOME/.cache
+XDG_DATA_HOME=$HOME/.local/share
+XDG_DATA_BIN=$HOME/.local/bin
+PATH=$XDG_DATA_BIN:$PATH
+PATH="/usr/local/bin:$PATH"
+PATH="/usr/local/sbin:$PATH"
 
 # Editor Setup
-export MANPAGER="more"
-export EDITOR="vim"
+MANPAGER="/bin/sh -c \"col -b | vim -c 'set ft=man ts=8 nomod nolist nonu noma' -\""
+EDITOR="vim"
 
 # Append to the history file, don't overwrite it
 shopt -s histappend
@@ -34,9 +34,9 @@ shopt -s cmdhist
 CDPATH="."
 
 if [[ "$(uname -s)" == "Darwin" ]]; then
-	alias ls="ls -FahrthG"
+  alias ls="ls -FahrthG"
 else
-	alias ls="ls -FarthG --color=auto"
+  alias ls="ls -FarthG --color=auto"
 fi
 
 alias watchdir="watch -d ls -la"
@@ -51,6 +51,24 @@ alias mv="mv -i"
 alias dc="docker-compose"
 alias mk="minikube"
 alias neofetch="neofetch --stdout"
+
+# Check for system (MACOS specific stuff)
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  alias locate_update="sudo /usr/libexec/locate.updatedb"
+  # keep system up-to-date
+  runbrewstuff() {
+    brew update
+    brew upgrade --greedy
+    rm -rf "$(brew --cache)"
+    brew cleanup
+    brew doctor
+    echo "Done ;)"
+  }
+
+  # install cask with new syntax and
+  # keeping old habits bc install <something>
+  bc() { brew "$1" "$2" --cask; }
+fi
 alias vim="\$HOME/.nix-profile/bin/vim"
 alias vi="\$HOME/.nix-profile/bin/vim"
 
@@ -62,8 +80,7 @@ npmls() { npm list -g --depth=0; }
 
 # list all available scripts for package.json and composer.json
 sc() {
-	[[ -f "$PWD/package.json" ]]; jq .scripts "$PWD/package.json" || ""
-	# [[ -f "$PWD/composer.json" ]]; jq .scripts "$PWD/composer.json" || ""
+  [[ -f "$PWD/package.json" ]]; jq .scripts "$PWD/package.json" || ""
 }
 
 # working dir shortcuts
@@ -72,40 +89,40 @@ builds() { cd "$HOME/builds" || return; }
 
 # remove local branches that dont have a remote equivalent anymore
 remove_merged() {
-	git fetch -p
-	for br in $(git branch -vv | grep ': gone]' | awk '{print $1}'); do
-		git br -D "$br"
-	done
+  git fetch -p
+  for br in $(git branch -vv | grep ': gone]' | awk '{print $1}'); do
+    git br -D "$br"
+  done
 }
 
 # push a local branch to the registry
 push_local() {
-	# check if the the function received a branch name
-	if [[ -z "$1"  ]]; then
-		echo "Need branch to push or '.' for the current as a shortcut";
-		return 1;
-	fi
+  # check if the the function received a branch name
+  if [[ -z "$1"  ]]; then
+    echo "Need branch to push or '.' for the current as a shortcut";
+    return 1;
+  fi
 
-	# assign the given branch name to a variable
-	# if the input was a dot '.' then get the current
-	# checked out branch as the local_branch
-	local local_branch
-	local_branch="$1";
-	if [[ "$1" == "." ]]; then
-		local_branch="$(git branch --show-current)";
-		echo "Using: $local_branch as the branch name";
-	fi
+   # assign the given branch name to a variable
+   # if the input was a dot '.' then get the current
+   # checked out branch as the local_branch
+   local local_branch
+   local_branch="$1"
+   if [[ "$1" == "." ]]; then
+     local_branch="$(git branch --show-current)"
+     echo "Using: $local_branch as the branch name"
+   fi
 
-	# check if the branch_name exists locally as a branch object
-	if git show-ref --quiet "refs/heads/$local_branch"; then
-		git push --set-upstream origin "$local_branch";
-		echo "INFO: Branch $local_branch now available remotely"
-	fi
-}
+   # check if the branch_name exists locally as a branch object
+   if git show-ref --quiet "refs/heads/$local_branch"; then
+     git push --set-upstream origin "$local_branch"
+     echo "INFO: Branch $local_branch now available remotely"
+   fi
+ }
 
 # sane defaults for vim users on linux or mac
 ignore() {
-	cat << EOM
+  cat << EOM
 *~
 [._]*.sw[a-p]
 .netrwhist
@@ -116,45 +133,62 @@ EOM
 
 # get current status of git repo | sc http://ezprompt.net/
 parse_git_dirty() {
-	local status untracked ahead newfile renamed deleted bits
-	status=$(git status 2>&1 | tee)
-	dirty=$(echo -n "${status}" 2>/dev/null | grep "modified:" &>/dev/null; echo "$?")
-	untracked=$(echo -n "${status}" 2>/dev/null | grep "Untracked files" &>/dev/null; echo "$?")
-	ahead=$(echo -n "${status}" 2>/dev/null | grep "Your branch is ahead of" &>/dev/null; echo "$?")
-	newfile=$(echo -n "${status}" 2>/dev/null | grep "new file:" &>/dev/null; echo "$?")
-	renamed=$(echo -n "${status}" 2>/dev/null | grep "renamed:" &>/dev/null; echo "$?")
-	deleted=$(echo -n "${status}" 2>/dev/null | grep "deleted:" &>/dev/null; echo "$?")
-	bits=''
+  local status untracked ahead newfile renamed deleted bits
+  status=$(git status 2>&1 | tee)
+  dirty=$(echo -n "${status}" 2>/dev/null | grep "modified:" &>/dev/null; echo "$?")
+  untracked=$(echo -n "${status}" 2>/dev/null | grep "Untracked files" &>/dev/null; echo "$?")
+  ahead=$(echo -n "${status}" 2>/dev/null | grep "Your branch is ahead of" &>/dev/null; echo "$?")
+  newfile=$(echo -n "${status}" 2>/dev/null | grep "new file:" &>/dev/null; echo "$?")
+  renamed=$(echo -n "${status}" 2>/dev/null | grep "renamed:" &>/dev/null; echo "$?")
+  deleted=$(echo -n "${status}" 2>/dev/null | grep "deleted:" &>/dev/null; echo "$?")
+  bits=''
 
-	if [ "${renamed}" == "0" ]; then bits="+-${bits}"; fi
-	if [ "${ahead}" == "0" ]; then bits="^${bits}"; fi
-	if [ "${newfile}" == "0" ]; then bits="++${bits}"; fi
-	if [ "${untracked}" == "0" ]; then bits="*${bits}"; fi
-	if [ "${deleted}" == "0" ]; then bits="-${bits}"; fi
-	if [ "${dirty}" == "0" ]; then bits="*${bits}"; fi
-	if [ ! "${bits}" == "" ]; then echo " ${bits}"; else echo ""; fi
+  if [ "${renamed}" == "0" ]; then bits="+-${bits}"; fi
+  if [ "${ahead}" == "0" ]; then bits="^${bits}"; fi
+  if [ "${newfile}" == "0" ]; then bits="++${bits}"; fi
+  if [ "${untracked}" == "0" ]; then bits="*${bits}"; fi
+  if [ "${deleted}" == "0" ]; then bits="-${bits}"; fi
+  if [ "${dirty}" == "0" ]; then bits="*${bits}"; fi
+  if [ ! "${bits}" == "" ]; then echo " ${bits}"; else echo ""; fi
 }
 
 # get current branch in git repo
 parse_git_branch() {
-	branch=$(git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-	if [ -n "${branch}" ]; then
-		local stat
-		stat=$(parse_git_dirty)
-		echo "[${branch}${stat}]"
-	else
-		echo ""
-	fi
+  branch=$(git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+  if [ -n "${branch}" ]; then
+    local stat
+    stat=$(parse_git_dirty)
+    echo "[${branch}${stat}]"
+  else
+    echo ""
+  fi
 }
 
 pwdc() {
-	echo "$PWD" | pbcopy
-	echo "Copied Pwd to PasteBoard"
+  echo "$PWD" | pbcopy
+  echo "Copied Pwd to PasteBoard"
 }
 
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
 # Setup promt like this: (user) :: (hostname) (PWD)$ [branch status ]
-export PS1="\[\e[1;32m\]\u\[\e[m\] :: \[\e[1;31m\]\w\[\e[m\] \[\e[1;36m\]\`parse_git_branch\`\[\e[m\] $ "
+PS1="\[\e[1;32m\]\u\[\e[m\] :: \[\e[1;31m\]\w\[\e[m\] \[\e[1;36m\]\`parse_git_branch\`\[\e[m\] $ "
+
+export \
+  HISTCONTROL \
+  HISTSIZE \
+  HISTFILESIZE \
+  HISTIGNORE \
+  CLICOLOR \
+  PROMPT_COMMAND \
+  XDG_CONFIG_HOME \
+  XDG_CACHE_HOME \
+  XDG_DATA_HOME \
+  XDG_DATA_BIND \
+  PATH \
+  MANPAGER \
+  EDITOR \
+  CDPATH \
+  PS1
 

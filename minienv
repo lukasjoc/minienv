@@ -55,20 +55,19 @@ alias neofetch="neofetch --stdout"
 # Check for system (MACOS specific stuff)
 if [[ "$(uname -s)" == "Darwin" ]]; then
   alias locate_update="sudo /usr/libexec/locate.updatedb"
+  # keep system up-to-date
+  runbrewstuff() {
+    brew update
+    brew upgrade --greedy
+    rm -rf "$(brew --cache)"
+    brew cleanup
+    brew doctor
+    echo "Done ;)"
+  }
 
-        # keep system up-to-date
-        runbrewstuff() {
-          brew update
-          brew upgrade --greedy
-          rm -rf "$(brew --cache)"
-          brew cleanup
-          brew doctor
-          echo "Done ;)"
-        }
-
-        # install cask with new syntax and
-        # keeping old habits bc install <something>
-        bc() { brew "$1" "$2" --cask; }
+  # install cask with new syntax and
+  # keeping old habits bc install <something>
+  bc() { brew "$1" "$2" --cask; }
 fi
 alias vim="\$HOME/.nix-profile/bin/vim"
 alias vi="\$HOME/.nix-profile/bin/vim"
@@ -104,22 +103,22 @@ push_local() {
     return 1;
   fi
 
-        # assign the given branch name to a variable
-        # if the input was a dot '.' then get the current
-        # checked out branch as the local_branch
-        local local_branch
-        local_branch="$1";
-        if [[ "$1" == "." ]]; then
-          local_branch="$(git branch --show-current)";
-          echo "Using: $local_branch as the branch name";
-        fi
+   # assign the given branch name to a variable
+   # if the input was a dot '.' then get the current
+   # checked out branch as the local_branch
+   local local_branch
+   local_branch="$1"
+   if [[ "$1" == "." ]]; then
+     local_branch="$(git branch --show-current)"
+     echo "Using: $local_branch as the branch name"
+   fi
 
-        # check if the branch_name exists locally as a branch object
-        if git show-ref --quiet "refs/heads/$local_branch"; then
-          git push --set-upstream origin "$local_branch";
-          echo "INFO: Branch $local_branch now available remotely"
-        fi
-      }
+   # check if the branch_name exists locally as a branch object
+   if git show-ref --quiet "refs/heads/$local_branch"; then
+     git push --set-upstream origin "$local_branch"
+     echo "INFO: Branch $local_branch now available remotely"
+   fi
+ }
 
 # sane defaults for vim users on linux or mac
 ignore() {
@@ -182,14 +181,14 @@ export \
   HISTFILESIZE \
   HISTIGNORE \
   CLICOLOR \
-  PROMPT_COMMAND
+  PROMPT_COMMAND \
   XDG_CONFIG_HOME \
-    XDG_CACHE_HOME \
-    XDG_DATA_HOME \
-    XDG_DATA_BIND \
-    PATH \
-    MANPAGER \
-    EDITOR \
-    CDPATH \
-    PS1
+  XDG_CACHE_HOME \
+  XDG_DATA_HOME \
+  XDG_DATA_BIND \
+  PATH \
+  MANPAGER \
+  EDITOR \
+  CDPATH \
+  PS1
 

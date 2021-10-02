@@ -9,7 +9,7 @@ HISTIGNORE="&:[ ]*:exit:ls:bg:fg:history:clear"
 CLICOLOR=1
 PROMPT_COMMAND='history -a'
 
-# XDG Setup
+# XDG, PATH Setup
 XDG_CONFIG_HOME=$HOME/.config
 XDG_CACHE_HOME=$HOME/.cache
 XDG_DATA_HOME=$HOME/.local/share
@@ -31,19 +31,15 @@ shopt -s checkwinsize
 # Save multi-line commands as one command
 shopt -s cmdhist
 
-# Prepend cd to directory names automatically
-shopt -s autocd 2> /dev/null
-
-# Correct spelling errors during tab-completion
-shopt -s dirspell 2> /dev/null
-
-# Correct spelling errors in arguments supplied to cd
-shopt -s cdspell 2> /dev/null
-
 CDPATH="."
 
-alias ls="ls -rthGF"
-alias watchdir="watch -d ls -al"
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  alias ls="ls -FahrthG"
+else
+  alias ls="ls -FarthG --color=auto"
+fi
+
+alias watchdir="watch -d ls -la"
 alias ll="ls -la"
 alias ..="cd ../"
 alias ...="cd ../../"
@@ -53,6 +49,7 @@ alias rm="rm -i"
 alias cp="cp -i"
 alias mv="mv -i"
 alias dc="docker-compose"
+alias mk="minikube"
 alias neofetch="neofetch --stdout"
 
 # Check for system (MACOS specific stuff)
@@ -73,6 +70,8 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
         # keeping old habits bc install <something>
         bc() { brew "$1" "$2" --cask; }
 fi
+alias vim="\$HOME/.nix-profile/bin/vim"
+alias vi="\$HOME/.nix-profile/bin/vim"
 
 # reload $SHELL with -
 ns() { exec "$SHELL" -l; }
@@ -83,7 +82,6 @@ npmls() { npm list -g --depth=0; }
 # list all available scripts for package.json and composer.json
 sc() {
   [[ -f "$PWD/package.json" ]]; jq .scripts "$PWD/package.json" || ""
-  [[ -f "$PWD/composer.json" ]]; jq .scripts "$PWD/composer.json" || ""
 }
 
 # working dir shortcuts
@@ -97,6 +95,31 @@ remove_merged() {
     git br -D "$br"
   done
 }
+
+# push a local branch to the registry
+push_local() {
+  # check if the the function received a branch name
+  if [[ -z "$1"  ]]; then
+    echo "Need branch to push or '.' for the current as a shortcut";
+    return 1;
+  fi
+
+        # assign the given branch name to a variable
+        # if the input was a dot '.' then get the current
+        # checked out branch as the local_branch
+        local local_branch
+        local_branch="$1";
+        if [[ "$1" == "." ]]; then
+          local_branch="$(git branch --show-current)";
+          echo "Using: $local_branch as the branch name";
+        fi
+
+        # check if the branch_name exists locally as a branch object
+        if git show-ref --quiet "refs/heads/$local_branch"; then
+          git push --set-upstream origin "$local_branch";
+          echo "INFO: Branch $local_branch now available remotely"
+        fi
+      }
 
 # sane defaults for vim users on linux or mac
 ignore() {
@@ -140,6 +163,11 @@ parse_git_branch() {
   else
     echo ""
   fi
+}
+
+pwdc() {
+  echo "$PWD" | pbcopy
+  echo "Copied Pwd to PasteBoard"
 }
 
 # If not running interactively, don't do anything

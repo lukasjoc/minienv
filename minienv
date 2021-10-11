@@ -52,7 +52,7 @@ alias dc="docker-compose"
 alias mk="minikube"
 alias neofetch="neofetch --stdout"
 alias grep="grep --color=auto"
-alias htop="htop -CMt -H=1000"
+alias htop="htop -CMt -H 1000"
 
 # Check for system (MACOS specific stuff)
 if [[ "$(uname -s)" == "Darwin" ]]; then

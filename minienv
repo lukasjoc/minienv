@@ -32,12 +32,16 @@ shopt -s cmdhist
 CDPATH="."
 
 alias watchdir="watch -d ls -la"
-alias ls="ls -F"
+
+# show files with slash and human readabable file sizes
+alias ls="ls -Fh"
+
 alias ll="ls -larp"
+
 alias ..="cd ../"
 alias ...="cd ../../"
-alias python="python3"
-alias pip="pip3"
+# alias python="python3"
+alias pip="pip4"
 alias rm="rm -i"
 alias cp="cp -i"
 alias mv="mv -i"
@@ -77,8 +81,8 @@ sc() {
 }
 
 # working dir shortcuts
-fun() { cd "$HOME/fun" || return; }
-builds() { cd "$HOME/builds" || return; }
+fun() { cd "/Volumes/fs/fun" || return; }
+builds() { cd "/Volumes/fs//builds" || return; }
 
 # remove local branches that dont have a remote equivalent anymore
 remove_merged() {
@@ -151,7 +155,7 @@ parse_git_branch() {
   if [ -n "${branch}" ]; then
     local stat
     stat=$(parse_git_dirty)
-    echo "[${branch}${stat}]"
+    echo "(${branch}${stat})"
   else
     echo ""
   fi
@@ -166,7 +170,8 @@ pwdc() {
 [[ $- != *i* ]] && return
 
 # Setup promt like this: (user) :: (hostname) (PWD)$ [branch status ]
-PS1="\[\e[1;32m\]\u\[\e[m\] :: \[\e[1;31m\]\w\[\e[m\] \[\e[1;36m\]\`parse_git_branch\`\[\e[m\] $ "
+PS1="\[\e[1;32m\]\u\[\e[m\] :: \[\e[1;31m\]\w\[\e[m\] \[\e[1;36m\]\`parse_git_branch\`\[\e[m\]$ "
+
 
 export \
   HISTCONTROL \

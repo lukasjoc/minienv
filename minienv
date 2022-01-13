@@ -40,8 +40,7 @@ alias ll="ls -larp"
 
 alias ..="cd ../"
 alias ...="cd ../../"
-# alias python="python3"
-alias pip="pip4"
+alias pip="/opt/homebrew/bin/pip3"
 alias rm="rm -i"
 alias cp="cp -i"
 alias mv="mv -i"
@@ -49,7 +48,7 @@ alias dc="docker-compose"
 alias mk="minikube"
 alias neofetch="neofetch --stdout"
 alias grep="grep --color=auto"
-alias htop="htop -CM -H 1000"
+alias htop="htop -M -H 1000"
 
 # Check for system (MACOS specific stuff)
 if [[ "$(uname -s)" == "Darwin" ]]; then

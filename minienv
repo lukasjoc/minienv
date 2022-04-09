@@ -15,10 +15,14 @@ XDG_DATA_BIN="$HOME/.local/bin"
 PATH="$XDG_DATA_BIN:$PATH"
 PATH="/usr/local/bin:$PATH"
 PATH="/usr/local/sbin:$PATH"
+PATH="/opt/homebrew/bin:$PATH"
 
 # Editor Setup
-MANPAGER="more"
+MANPAGER="col -b | vim --noplugin -c 'set ft=man ts=8 nomod nolist nonu noma' -"
 EDITOR="vim"
+
+# Change for custom volume when using a different file sys
+MAC_VOL="/Volumes/fs"
 
 # Append to the history file, don't overwrite it
 shopt -s histappend
@@ -31,24 +35,22 @@ shopt -s cmdhist
 
 CDPATH="."
 
-alias watchdir="watch -d ls -la"
-
-# show files with slash and human readabable file sizes
-alias ls="ls -Fh"
-
-alias ll="ls -larp"
-
 alias ..="cd ../"
 alias ...="cd ../../"
-alias pip="/opt/homebrew/bin/pip3"
+
+alias ls="ls -rp"
+alias ll="ls -la"
+alias python="python3"
+alias pip="pip3"
 alias rm="rm -i"
 alias cp="cp -i"
 alias mv="mv -i"
+alias watchdir="watch -d ls -la"
 alias dc="docker-compose"
 alias mk="minikube"
 alias neofetch="neofetch --stdout"
 alias grep="grep --color=auto"
-alias htop="htop -M -H 1000"
+alias cfmt="astyle -s4 --style=google"
 
 # Check for system (MACOS specific stuff)
 if [[ "$(uname -s)" == "Darwin" ]]; then
@@ -57,9 +59,11 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
   runbrewstuff() {
     brew update --verbose
     brew upgrade --greedy --cask --verbose
+    brew upgrade
     rm -rf "$(brew --cache)"
-    brew cleanup
     brew doctor
+    brew autoremove
+    brew cleanup
     echo "Done ;)"
   }
 
@@ -80,10 +84,12 @@ sc() {
 }
 
 # working dir shortcuts
+home() { cd "$MAC_VOL" || return; }
 fun() { cd "/Volumes/fs/fun" || return; }
 builds() { cd "/Volumes/fs//builds" || return; }
 
 # remove local branches that dont have a remote equivalent anymore
+# this is a game changer in workflow integrity ;)
 remove_merged() {
   git fetch -p
   for br in $(git branch -vv | grep ': gone]' | awk '{print $1}'); do
@@ -91,7 +97,8 @@ remove_merged() {
   done
 }
 
-# push a local branch to the registry
+# push a local branch to the remote registry
+# this is a game changer in workflow integrity ;)
 push_local() {
   # check if the the function received a branch name
   if [[ -z "$1"  ]]; then
@@ -116,7 +123,6 @@ push_local() {
    fi
  }
 
-# sane defaults for vim users on linux or mac
 ignore() {
   cat << EOM
 *~
@@ -124,6 +130,8 @@ ignore() {
 .netrwhist
 .DS_Store
 tags
+.vscode/
+out
 EOM
 }
 
@@ -169,8 +177,7 @@ pwdc() {
 [[ $- != *i* ]] && return
 
 # Setup promt like this: (user) :: (hostname) (PWD)$ [branch status ]
-PS1="\[\e[1;32m\]\u\[\e[m\] :: \[\e[1;31m\]\w\[\e[m\] \[\e[1;36m\]\`parse_git_branch\`\[\e[m\]$ "
-
+PS1="\[\e[1;32m\]\s\u\[\e[m\] # \[\e[1;31m\]\w\[\e[m\] \[\e[1;36m\]\`parse_git_branch\`\[\e[m\]$ "
 
 export \
   HISTCONTROL \

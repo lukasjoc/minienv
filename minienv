@@ -18,6 +18,7 @@ PATH="/usr/local/sbin:$PATH"
 PATH="/opt/homebrew/bin:$PATH"
 
 # Editor Setup
+MANWIDTH="85"
 MANPAGER="col -b | vim --noplugin -c 'set ft=man ts=8 nomod nolist nonu noma' -"
 EDITOR="vim"
 
@@ -177,7 +178,7 @@ pwdc() {
 [[ $- != *i* ]] && return
 
 # Setup promt like this: (user) :: (hostname) (PWD)$ [branch status ]
-PS1="\[\e[1;32m\]\s\u\[\e[m\] # \[\e[1;31m\]\w\[\e[m\] \[\e[1;36m\]\`parse_git_branch\`\[\e[m\]$ "
+PS1="\[\e[1;32m\]\u\[\e[m\] # \[\e[1;31m\]\w\[\e[m\] \[\e[1;36m\]\`parse_git_branch\`\[\e[m\]$ "
 
 export \
   HISTCONTROL \
@@ -191,6 +192,7 @@ export \
   XDG_DATA_HOME \
   XDG_DATA_BIND \
   PATH \
+  MANWIDTH \
   MANPAGER \
   EDITOR \
   CDPATH \

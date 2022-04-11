@@ -1,9 +1,13 @@
 #!/bin/bash
 
+# If not running interactively, don't do anything
+[[ $- != *i* ]] && return
+
+# Setup essential variables
 HISTCONTROL=ignoreboth
 HISTSIZE=500000
 HISTFILESIZE=100000
-HISTIGNORE="&:[ ]*:exit:ls:bg:fg:history:clear"
+HISTIGNORE="&:[ ]*:exit:ls:ns:bg:fg:history:clear"
 CLICOLOR=1
 PROMPT_COMMAND='history -a'
 
@@ -21,9 +25,16 @@ PATH="/opt/homebrew/bin:$PATH"
 MANWIDTH="85"
 MANPAGER="col -b | vim --noplugin -c 'set ft=man ts=8 nomod nolist nonu noma' -"
 EDITOR="vim"
+VISUAL="vim"
 
 # Change for custom volume when using a different file sys
 MAC_VOL="/Volumes/www"
+
+# Setup Pathline
+PS1="\[\e[1;32m\]\u\[\e[m\] # \[\e[1;31m\]\w\[\e[m\] \[\e[1;36m\]\`parse_git_branch\`\[\e[m\]$ "
+
+# Vi Mode, Pairs with my inputrc really well ;>)
+set -o vi
 
 # Append to the history file, don't overwrite it
 shopt -s histappend
@@ -55,34 +66,40 @@ alias cfmt="astyle -s4 --style=google"
 
 # Check for system (MACOS specific stuff)
 if [[ "$(uname -s)" == "Darwin" ]]; then
-  alias locate_update="sudo /usr/libexec/locate.updatedb"
-  # keep system up-to-date
-  runbrewstuff() {
-    brew update --verbose
-    brew upgrade --greedy --cask --verbose
-    brew upgrade
-    rm -rf "$(brew --cache)"
-    brew doctor
-    brew autoremove
-    brew cleanup
-    echo "Done ;)"
-  }
+    alias locate_update="sudo /usr/libexec/locate.updatedb"
+    # keep system up-to-date
+    runbrewstuff() {
+        brew update --verbose
+        brew upgrade --greedy --cask --verbose
+        brew upgrade
+        rm -rf "$(brew --cache)"
+        brew doctor
+        brew autoremove
+        brew cleanup
+        echo "Done ;)"
+    }
 
   # install cask with new syntax and
   # keeping old habits bc install <something>
   bc() { brew "$1" "$2" --cask; };
+
+      HOMEBREW_NO_AUTO_UPDATE=1
+      export HOMEBREW_NO_AUTO_UPDATE
 fi
 
 # reload $SHELL with -
 ns() { exec "$SHELL" -l; }
 
 # ls all global installed npm packages
-npmls() { npm list -g --depth=0; }
+npmls() {
+    echo "Node: $(which node)";
+    echo "NPM: $(which npm)";
+    npm list -g --depth=0;
+}
 
 # list all available scripts for package.json and composer.json
-sc() {
-  [[ -f "$PWD/package.json" ]]; jq .scripts "$PWD/package.json" || ""
-}
+# TODO: write `exact` command that will have a feature for this
+sc() { [[ -f "$PWD/package.json" ]]; jq .scripts "$PWD/package.json" || ""; }
 
 # working dir shortcuts
 home() { cd "$MAC_VOL" || return; }
@@ -92,20 +109,20 @@ builds() { cd "$MAC_VOL/builds" || return; }
 # remove local branches that dont have a remote equivalent anymore
 # this is a game changer in workflow integrity ;)
 remove_merged() {
-  git fetch -p
-  for br in $(git branch -vv | grep ': gone]' | awk '{print $1}'); do
-    git br -D "$br"
-  done
+    git fetch -p
+    for br in $(git branch -vv | grep ': gone]' | awk '{print $1}'); do
+        git br -D "$br"
+    done
 }
 
 # push a local branch to the remote registry
 # this is a game changer in workflow integrity ;)
 push_local() {
-  # check if the the function received a branch name
-  if [[ -z "$1"  ]]; then
-    echo "Need branch to push or '.' for the current as a shortcut";
-    return 1;
-  fi
+    # check if the the function received a branch name
+    if [[ -z "$1"  ]]; then
+        echo "Need branch to push or '.' for the current as a shortcut";
+        return 1;
+    fi
 
    # assign the given branch name to a variable
    # if the input was a dot '.' then get the current
@@ -113,19 +130,19 @@ push_local() {
    local local_branch
    local_branch="$1"
    if [[ "$1" == "." ]]; then
-     local_branch="$(git branch --show-current)"
-     echo "Using: $local_branch as the branch name"
+       local_branch="$(git branch --show-current)"
+       echo "Using: $local_branch as the branch name"
    fi
 
    # check if the branch_name exists locally as a branch object
    if git show-ref --quiet "refs/heads/$local_branch"; then
-     git push --set-upstream origin "$local_branch"
-     echo "INFO: Branch $local_branch now available remotely"
+       git push --set-upstream origin "$local_branch"
+       echo "INFO: Branch $local_branch now available remotely"
    fi
- }
+}
 
 ignore() {
-  cat << EOM
+    cat << EOM
 *~
 [._]*.sw[a-p]
 .netrwhist
@@ -138,63 +155,55 @@ EOM
 
 # get current status of git repo | sc http://ezprompt.net/
 parse_git_dirty() {
-  local status untracked ahead newfile renamed deleted bits
-  status=$(git status 2>&1 | tee)
-  dirty=$(echo -n "${status}" 2>/dev/null | grep "modified:" &>/dev/null; echo "$?")
-  untracked=$(echo -n "${status}" 2>/dev/null | grep "Untracked files" &>/dev/null; echo "$?")
-  ahead=$(echo -n "${status}" 2>/dev/null | grep "Your branch is ahead of" &>/dev/null; echo "$?")
-  newfile=$(echo -n "${status}" 2>/dev/null | grep "new file:" &>/dev/null; echo "$?")
-  renamed=$(echo -n "${status}" 2>/dev/null | grep "renamed:" &>/dev/null; echo "$?")
-  deleted=$(echo -n "${status}" 2>/dev/null | grep "deleted:" &>/dev/null; echo "$?")
-  bits=''
+    local status untracked ahead newfile renamed deleted bits
+    status=$(git status 2>&1 | tee)
+    dirty=$(echo -n "${status}" 2>/dev/null | grep "modified:" &>/dev/null; echo "$?")
+    untracked=$(echo -n "${status}" 2>/dev/null | grep "Untracked files" &>/dev/null; echo "$?")
+    ahead=$(echo -n "${status}" 2>/dev/null | grep "Your branch is ahead of" &>/dev/null; echo "$?")
+    newfile=$(echo -n "${status}" 2>/dev/null | grep "new file:" &>/dev/null; echo "$?")
+    renamed=$(echo -n "${status}" 2>/dev/null | grep "renamed:" &>/dev/null; echo "$?")
+    deleted=$(echo -n "${status}" 2>/dev/null | grep "deleted:" &>/dev/null; echo "$?")
+    bits=''
 
-  if [ "${renamed}" == "0" ]; then bits="+-${bits}"; fi
-  if [ "${ahead}" == "0" ]; then bits="^${bits}"; fi
-  if [ "${newfile}" == "0" ]; then bits="++${bits}"; fi
-  if [ "${untracked}" == "0" ]; then bits="*${bits}"; fi
-  if [ "${deleted}" == "0" ]; then bits="-${bits}"; fi
-  if [ "${dirty}" == "0" ]; then bits="*${bits}"; fi
-  if [ ! "${bits}" == "" ]; then echo " ${bits}"; else echo ""; fi
+    if [ "${renamed}" == "0" ]; then bits="+-${bits}"; fi
+    if [ "${ahead}" == "0" ]; then bits="^${bits}"; fi
+    if [ "${newfile}" == "0" ]; then bits="++${bits}"; fi
+    if [ "${untracked}" == "0" ]; then bits="*${bits}"; fi
+    if [ "${deleted}" == "0" ]; then bits="-${bits}"; fi
+    if [ "${dirty}" == "0" ]; then bits="*${bits}"; fi
+    if [ ! "${bits}" == "" ]; then echo " ${bits}"; else echo ""; fi
 }
 
 # get current branch in git repo
 parse_git_branch() {
-  branch=$(git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-  if [ -n "${branch}" ]; then
-    local stat
-    stat=$(parse_git_dirty)
-    echo "(${branch}${stat})"
-  else
-    echo ""
-  fi
+    branch=$(git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    if [ -n "${branch}" ]; then
+        local stat
+        stat=$(parse_git_dirty)
+        echo "(${branch}${stat})"
+    else
+        echo ""
+    fi
 }
 
-pwdc() {
-  echo "$PWD" | pbcopy
-  echo "Copied Pwd to PasteBoard"
-}
-
-# If not running interactively, don't do anything
-[[ $- != *i* ]] && return
-
-# Setup promt like this: (user) :: (hostname) (PWD)$ [branch status ]
-PS1="\[\e[1;32m\]\u\[\e[m\] # \[\e[1;31m\]\w\[\e[m\] \[\e[1;36m\]\`parse_git_branch\`\[\e[m\]$ "
+# Copy the current working dir; Only works if pbcopy is installed (Mac)
+pwdc() { pwd | pbcopy && echo "Copied Pwd to PasteBoard"; }
 
 export \
-  HISTCONTROL \
-  HISTSIZE \
-  HISTFILESIZE \
-  HISTIGNORE \
-  CLICOLOR \
-  PROMPT_COMMAND \
-  XDG_CONFIG_HOME \
-  XDG_CACHE_HOME \
-  XDG_DATA_HOME \
-  XDG_DATA_BIND \
-  PATH \
-  MANWIDTH \
-  MANPAGER \
-  EDITOR \
-  CDPATH \
-  PS1
+    HISTCONTROL \
+    HISTSIZE \
+    HISTFILESIZE \
+    HISTIGNORE \
+    CLICOLOR \
+    PROMPT_COMMAND \
+    XDG_CONFIG_HOME \
+    XDG_CACHE_HOME \
+    XDG_DATA_HOME \
+    XDG_DATA_BIND \
+    PATH \
+    MANWIDTH \
+    MANPAGER \
+    EDITOR \
+    CDPATH \
+    PS1
 

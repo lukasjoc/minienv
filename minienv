@@ -28,7 +28,7 @@ EDITOR="vim"
 VISUAL="vim"
 
 # Change for custom volume when using a different file sys
-MAC_VOL="/Volumes/www"
+MAC_VOL="/Volumes/fs"
 
 # Setup Pathline
 PS1="\[\e[1;32m\]\u\[\e[m\] # \[\e[1;31m\]\w\[\e[m\] \[\e[1;36m\]\`parse_git_branch\`\[\e[m\]$ "
@@ -103,7 +103,7 @@ sc() { [[ -f "$PWD/package.json" ]]; jq .scripts "$PWD/package.json" || ""; }
 
 # working dir shortcuts
 home() { cd "$MAC_VOL" || return; }
-fun() { cd "$MAC_VOL/w" || return; }
+fun() { cd "$MAC_VOL/fun" || return; }
 builds() { cd "$MAC_VOL/builds" || return; }
 
 # remove local branches that dont have a remote equivalent anymore

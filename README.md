@@ -1,4 +1,4 @@
 # minienv (for bash 5+)
 
-> a minimal config
+> a minimal config (linux optimized)
 

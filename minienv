@@ -126,17 +126,22 @@ push_local() {
    fi
 }
 
+# ignore all files and exclude important ones
 ignore() {
     cat << EOM
 *
 !*/
 !*.*
 *~
+*.o
 [._]*.sw[a-p]
 .netrwhist
 .DS_Store
 tags
 out
+!LICENSE
+!README
+!Makfile
 EOM
 }
 

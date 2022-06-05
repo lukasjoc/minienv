@@ -162,8 +162,9 @@ ignore() {
 .netrwhist
 .DS_Store
 tags
-.vscode/
 out
+!LICENSE
+!README
 EOM
 }
 
@@ -216,6 +217,7 @@ export \
     XDG_DATA_BIND \
     PATH \
     MANWIDTH \
+    VISUAL \
     MANPAGER \
     EDITOR \
     CDPATH \

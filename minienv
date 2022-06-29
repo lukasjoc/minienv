@@ -31,7 +31,7 @@ VISUAL="vim"
 MAC_VOL="/Volumes/www"
 
 # Setup Pathline
-PS1="\[\e[1;32m\]\u\[\e[m\] # \[\e[1;31m\]\w\[\e[m\] \[\e[1;36m\]\`parse_git_branch\`\[\e[m\]$ "
+PS1="\[\e[1;32m\]\u\[\e[m\]@\h # \[\e[1;31m\]\w\[\e[m\] \[\e[1;36m\]\`parse_git_branch\`\[\e[m\]$ "
 
 # Vi Mode, Pairs with my inputrc really well ;>)
 set -o vi

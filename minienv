@@ -43,6 +43,9 @@ shopt -s checkwinsize
 # Save multi-line commands as one command
 shopt -s cmdhist
 
+# unset completion for better variable escaping
+shopt -u progcomp
+
 CDPATH="."
 
 alias ..="cd ../"
@@ -56,10 +59,8 @@ alias cp="cp -i"
 alias mv="mv -i"
 alias watchdir="watch -d ls -la"
 alias dc="docker-compose"
-alias mk="minikube"
 alias neofetch="neofetch --stdout"
 alias grep="grep --color=auto"
-alias cfmt="astyle -s4 --style=google"
 
 # reload $SHELL with -
 ns() { exec "$SHELL" -l; }
@@ -177,9 +178,6 @@ parse_git_branch() {
         echo ""
     fi
 }
-
-# Copy the current working dir; Only works if pbcopy is installed (Mac)
-pwdc() { pwd | pbcopy && echo "Copied Pwd to PasteBoard"; }
 
 export \
     HISTCONTROL \

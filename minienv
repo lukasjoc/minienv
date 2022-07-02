@@ -19,16 +19,14 @@ XDG_DATA_BIN="$HOME/.local/bin"
 PATH="$XDG_DATA_BIN:$PATH"
 PATH="/usr/local/bin:$PATH"
 PATH="/usr/local/sbin:$PATH"
-PATH="/opt/homebrew/bin:$PATH"
 
 # Editor Setup
 MANWIDTH="85"
-MANPAGER="col -b | vim --noplugin -c 'set ft=man ts=8 nomod nolist nonu noma' -"
 EDITOR="vim"
 VISUAL="vim"
 
 # Change for custom volume when using a different file sys
-MAC_VOL="/Volumes/www"
+NIX_VOL="$HOME"
 
 # Setup Pathline
 PS1="\[\e[1;32m\]\u\[\e[m\]@\h # \[\e[1;31m\]\w\[\e[m\] \[\e[1;36m\]\`parse_git_branch\`\[\e[m\]$ "
@@ -50,10 +48,9 @@ CDPATH="."
 alias ..="cd ../"
 alias ...="cd ../../"
 
-alias ls="ls -rp"
+alias ls="ls --color=auto -rp"
 alias ll="ls -la"
 alias python="python3"
-alias pip="pip3"
 alias rm="rm -i"
 alias cp="cp -i"
 alias mv="mv -i"
@@ -63,29 +60,6 @@ alias mk="minikube"
 alias neofetch="neofetch --stdout"
 alias grep="grep --color=auto"
 alias cfmt="astyle -s4 --style=google"
-
-# Check for system (MACOS specific stuff)
-if [[ "$(uname -s)" == "Darwin" ]]; then
-    alias locate_update="sudo /usr/libexec/locate.updatedb"
-    # keep system up-to-date
-    runbrewstuff() {
-        brew update --verbose
-        brew upgrade --greedy --cask --verbose
-        brew upgrade
-        rm -rf "$(brew --cache)"
-        brew doctor
-        brew autoremove
-        brew cleanup
-        echo "Done ;)"
-    }
-
-  # install cask with new syntax and
-  # keeping old habits bc install <something>
-  bc() { brew "$1" "$2" --cask; };
-
-      HOMEBREW_NO_AUTO_UPDATE=1
-      export HOMEBREW_NO_AUTO_UPDATE
-fi
 
 # reload $SHELL with -
 ns() { exec "$SHELL" -l; }
@@ -102,9 +76,9 @@ npmls() {
 sc() { [[ -f "$PWD/package.json" ]]; jq .scripts "$PWD/package.json" || ""; }
 
 # working dir shortcuts
-home() { cd "$MAC_VOL" || return; }
-fun() { cd "$MAC_VOL/w" || return; }
-builds() { cd "$MAC_VOL/builds" || return; }
+home() { cd "$NIX_VOL" || return; }
+fun() { cd "$NIX_VOL/fun" || return; }
+builds() { cd "$NIX_VOL/builds" || return; }
 
 # remove local branches that dont have a remote equivalent anymore
 # this is a game changer in workflow integrity ;)
@@ -152,18 +126,22 @@ push_local() {
    fi
 }
 
+# ignore all files and exclude important ones
 ignore() {
     cat << EOM
 *
 !*/
 !*.*
 *~
+*.o
 [._]*.sw[a-p]
 .netrwhist
 .DS_Store
 tags
-.vscode/
 out
+!LICENSE
+!README
+!Makfile
 EOM
 }
 
